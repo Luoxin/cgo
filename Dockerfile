@@ -11,7 +11,7 @@ COPY --from=docker.io/hairyhenderson/upx:3.94@sha256:e653c4c34539b6de164461b3e29
 
 # install go
 COPY --from=docker.io/golang:1.17.6@sha256:ec67c62f48ddfbca1ccaef18f9b3addccd707e1885fa28702a3954340786fcf6 /usr/local/go /usr/local/go
-ENV PATH /usr/local/go/bin:$PATH
+ENV PATH /usr/local/go/bin:/root/go/bin/:$PATH
 
 # install goreleaser
 COPY --from=docker.io/goreleaser/goreleaser:1.4.1@sha256:b216450b9a207975b45ec572ab7c3eb6c56ee4ca44f8672bdb9a76b7da61c316 /usr/local/bin/goreleaser /usr/local/bin/goreleaser
