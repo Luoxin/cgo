@@ -1,4 +1,5 @@
-FROM docker.io/multiarch/crossbuild:latest@sha256:8dbaa86462270db93ae1b1b319bdd88d89272faf3a68632daf4fa36b414a326e
+ARG PLATFORMS="linux/386 linux/amd64 linux/arm64 linux/arm/v5 linux/arm/v6 linux/arm/v7 linux/mips linux/mipsle linux/mips64 linux/mips64le linux/ppc64le linux/riscv64 linux/s390x windows/386 windows/amd64"
+FROM --platform=$BUILDPLATFORM crazymax/goxx:latest
 
 # install cosign
 COPY --from=ghcr.io/sigstore/cosign/cosign:6575648f069f8f7aa7f72ec2b0e38b77914f2883@sha256:1361aa271fd2c945dddef0e6bdef907aff745c88f9fab0ed27ec46c96b70102f /ko-app/cosign /usr/local/bin/cosign
@@ -9,17 +10,41 @@ COPY --from=docker.io/anchore/syft:v0.36.0@sha256:305e1777f6e105bfd4cc9a06faceef
 # install upx
 COPY --from=docker.io/hairyhenderson/upx:3.94@sha256:e653c4c34539b6de164461b3e29ac4b821dcf708e9f4b831bfa8f5824623c5ef /usr/bin/upx /usr/local/bin/upx
 
-# install go
-COPY --from=docker.io/golang:1.17.6@sha256:ec67c62f48ddfbca1ccaef18f9b3addccd707e1885fa28702a3954340786fcf6 /usr/local/go /usr/local/go
-ENV PATH /usr/local/go/bin:/root/go/bin/:$PATH
-
 # install goreleaser
-COPY --from=docker.io/goreleaser/goreleaser:1.4.1@sha256:b216450b9a207975b45ec572ab7c3eb6c56ee4ca44f8672bdb9a76b7da61c316 /usr/local/bin/goreleaser /usr/local/bin/goreleaser
+COPY --from=docker.io/goreleaser/goreleaser:v1.12.2@sha256:144aa3cac0fed4d8998798a0ece33785e50493e58a7393c3d9f5b95397faf174 /usr/bin/goreleaser /usr/local/bin/goreleaser
 
-RUN go env -w CGO_ENABLED=1 && \
+# osxcross
+COPY --from=crazymax/osxcross /osxcross /osxcross
+
+ENV GOXX_SKIP_APT_PORTS=1
+RUN goxx-apt-get update && \
+    TARGETPLATFORM=linux/386 goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=linux/amd64 goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=linux/arm64 goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=linux/arm/v5 goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=linux/arm/v6 goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=linux/arm/v7 goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=linux/mips goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=linux/mipsle goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=linux/mips64 goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=linux/mips64le goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=linux/ppc64le goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=linux/riscv64 goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=linux/s390x goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=windows/386 goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=windows/amd64 goxx-apt-get install -y binutils gcc g++ pkg-config && \
+    go env -w CGO_ENABLED=0 && \
     go env -w GO111MODULE=on && \
     go env -w GOCACHE=/tmp/gocache && \
-    go env -w GOMODCACHE=/tmo/gomod
+    go env -w GOMODCACHE=/tmp/gomod && \
+    go env -w GOBIN=/tmp/gobin && \
+    go env -w GOPROXY=https://goproxy.cn,direct && \
+    go env -w GOSUMDB=off
 
-WORKDIR /home/
+RUN rm -rf /usr/local/go
+COPY --from=docker.io/golang:1.19.2 /usr/local/go /usr/local/go
+
+ENV PATH /tmp/gobin/:/usr/local/go/bin:/root/go/bin/:/usr/local/bin/:/osxcross:$PATH
+
+WORKDIR /home/embla/
 ENTRYPOINT ["/bin/bash"]
