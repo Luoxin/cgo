@@ -1,4 +1,4 @@
-ARG PLATFORMS="linux/386 linux/amd64 linux/arm64 linux/arm/v5 linux/arm/v6 linux/arm/v7 linux/mips linux/mipsle linux/mips64 linux/mips64le linux/ppc64le linux/riscv64 linux/s390x windows/386 windows/amd64"
+ARG PLATFORMS="linux/386 linux/amd64 linux/arm64 linux/arm/v5 linux/arm/v6 linux/arm/v7 linux/mips linux/mipsle linux/mips64 linux/mips64le linux/ppc64le linux/riscv64 linux/s390x windows/386 windows/amd64 darwin/amd64 darwin/arm64"
 FROM --platform=$BUILDPLATFORM crazymax/goxx:latest
 
 # install cosign
@@ -32,6 +32,8 @@ RUN goxx-apt-get update && \
     TARGETPLATFORM=linux/s390x goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
     TARGETPLATFORM=windows/386 goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
     TARGETPLATFORM=windows/amd64 goxx-apt-get install -y binutils gcc g++ pkg-config && \
+    TARGETPLATFORM=darwin/arm64 goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
+    TARGETPLATFORM=darwin/amd64 goxx-apt-get install -y binutils gcc g++ pkg-config && \
     go env -w CGO_ENABLED=0 && \
     go env -w GO111MODULE=on && \
     go env -w GOCACHE=/tmp/gocache && \
