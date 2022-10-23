@@ -40,9 +40,6 @@ RUN goxx-apt-get update && \
     go env -w GOPROXY=https://goproxy.cn,direct && \
     go env -w GOSUMDB=off
 
-RUN rm -rf /usr/local/go
-COPY --from=docker.io/golang:1.19.2 /usr/local/go /usr/local/go
-
 ENV PATH /tmp/gobin/:/usr/local/go/bin:/root/go/bin/:/usr/local/bin/:/osxcross:$PATH
 
 WORKDIR /home/embla/
