@@ -45,5 +45,5 @@ RUN goxx-apt-get update && \
 
 ENV PATH /tmp/gobin/:/usr/local/go/bin:/root/go/bin/:/usr/local/bin/:/osxcross:$PATH
 
-WORKDIR /home/embla/
+WORKDIR /home/
 ENTRYPOINT ["/bin/bash"]
