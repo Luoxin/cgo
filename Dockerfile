@@ -16,6 +16,7 @@ COPY --from=docker.io/goreleaser/goreleaser:v1.12.2@sha256:144aa3cac0fed4d899879
 # osxcross
 COPY --from=crazymax/osxcross /osxcross /osxcross
 
+ENV GOXX_SKIP_APT_PORTS=1
 RUN goxx-apt-get update && \
     TARGETPLATFORM=linux/386 goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
     TARGETPLATFORM=linux/amd64 goxx-apt-get install -y binutils gcc g++ pkg-config &&  \
